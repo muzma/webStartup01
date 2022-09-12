@@ -32,12 +32,18 @@ func main() {
 
 	userHandler := handler.NewUserHandler(userService, authService)
 
-	userWebHandler := webHandler.NewUserHandler()
+	userWebHandler := webHandler.NewUserHandler(userService)
 
 	router := gin.Default()
 
-	router.LoadHTMLGlob("web/templates/**/*")
+	//router.LoadHTMLGlob("web/templates/**/*")
+
 	router.HTMLRender = loadTemplates("./web/templates")
+
+	router.Static("/images", "./images")
+	router.Static("/css", "./web/assets/css")
+	router.Static("/js", "./web/assets/js")
+	router.Static("/webfonts", "./web/assets/webfonts")
 
 	api := router.Group("/api/v1")
 
@@ -47,6 +53,11 @@ func main() {
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
 
 	router.GET("/users", userWebHandler.Index)
+	router.GET("/users/new", userWebHandler.New)
+	router.POST("/users", userWebHandler.Create)
+	router.GET("/users/edit/:id", userWebHandler.Edit)
+	router.POST("/users/update/:id", userWebHandler.Update)
+
 	router.Run()
 
 	//input dari user
